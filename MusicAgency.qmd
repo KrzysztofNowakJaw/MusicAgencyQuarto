@@ -112,25 +112,6 @@ Our agency organized **`r PartiesN`** events worth of **`r ContractsValue`**
 ```{r,error=FALSE,message = FALSE,warning=FALSE,echo=FALSE}
 
 
-CitySummary <- PartiesTrend |> 
-  ggplot(aes(x = fct_reorder(miastoklienta, desc(PartiesN)), 
-             y = PartiesN, fill = Flag)) +  # Map fill to the Flag column
-  geom_col() + 
-  geom_text(aes(label = PartiesN, color = Flag),    
-            vjust = -0.5,                          
-            size = 4) +                          
-  scale_fill_identity() +  
-  scale_color_identity() +  
-  labs(x = "", y = "Number of Parties", title = "<b><span style='color:steelblue;'>Bullevue</span> is most popular city<b>")
-
-# Dodajemy stylizację wykresu
-CitySummary + 
-  My_theme()
-
-
-```
-
-```{r,error=FALSE,message = FALSE,warning=FALSE,echo=FALSE}
 PartiesDates |> 
   complete(dzienrozpoczecia = seq.Date(from = min(PartiesDates$dzienrozpoczecia),
                                        to = max(PartiesDates$dzienrozpoczecia), by = 'day')) |> 
@@ -144,9 +125,27 @@ PartiesDates |>
   geom_text(aes(y = Points, label = round(Points, 0)), vjust = -1, na.rm = TRUE, size = 3) +  # Dodajemy etykiety co 10 dni
   scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
   scale_y_continuous(n.breaks = 5) +
-  labs(x = "", y = '', title = "The agency has organized a cumulative total of <span style='color:steelblue;'>111</span> events to date.") +
+  labs(x = "", y = '', title = "<b>The agency has organized a cumulative total of <span style='color:steelblue;'>111</span> events to date<b>") +
   My_theme()
 
+```
+
+```{r,error=FALSE,message = FALSE,warning=FALSE,echo=FALSE}
+
+CitySummary <- PartiesTrend |> 
+  ggplot(aes(x = fct_reorder(miastoklienta, desc(PartiesN)), 
+             y = PartiesN, fill = Flag)) +  # Map fill to the Flag column
+  geom_col() + 
+  geom_text(aes(label = PartiesN, color = Flag),    
+            vjust = -0.5,                          
+            size = 4) +                          
+  scale_fill_identity() +  
+  scale_color_identity() +  
+  labs(x = "", y = "Number of Parties", title = "<b><span style='color:steelblue;'>Bullevue</span> is most popular location<b>")
+
+# Dodajemy stylizację wykresu
+CitySummary + 
+  My_theme()
 
 
 ```
