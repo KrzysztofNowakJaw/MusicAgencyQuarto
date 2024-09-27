@@ -1,0 +1,205 @@
+---
+title: "Music agency activities"
+subtitle: "Summary for events organized between 2017-09-02 and 2018-03-04"
+
+format:
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+    toc: false
+    toc-location: left
+title-block-banner: true
+title-block-banner-color: "white"
+
+author: "Krzysztof Nowak"
+name: "Krzysztof Nowak"
+email: knowak1990@outlook.com
+
+keywords: "Quarto,Data Analysis"
+date: today
+theme: Sandstone
+---
+
+```{r echo=FALSE ,warning=FALSE,error=FALSE,message = FALSE}
+library(tidyverse)
+library(gtExtras)
+library(plotly)
+library(gt)
+library(scales)
+library(patchwork)
+library(ggtext)
+
+theme_set(theme_minimal())
+
+My_theme <- function() {
+  theme(
+    plot.title = element_markdown(),
+    plot.title.position = "plot",
+    panel.background = element_blank(),
+    panel.grid.major = element_blank()
+  )
+}
+
+Parties <- readRDS('Parties.RDS')
+Clients <- readRDS('Clients.RDS')
+Bands <- readRDS('Bands.RDS')
+BandsStats <- readRDS('BandsStats.RDS')
+```
+
+```{r echo=FALSE ,warning=FALSE,error=FALSE,message = FALSE}
+PartiesLocation <- Parties |>
+  left_join(Clients)
+
+PartiesLocation <- Parties |>
+  left_join(Clients)
+
+
+PartiesDates <- PartiesLocation |>
+  mutate(Year = year(dzienrozpoczecia),
+         Month = month(dzienrozpoczecia),
+         miastoklienta = as.factor(miastoklienta),
+         dayOfweek = weekdays(dzienrozpoczecia))
+
+
+PartiesTrend <- PartiesDates |>
+  summarise(PartiesN = n(),.by = c(stanzamklienta,miastoklienta)) |>
+  mutate(Flag = 
+           case_when(
+           dense_rank(desc(PartiesN)) == 1 ~ 'steelblue',.default = 'lightgray'))
+
+
+DaysTrend <- PartiesDates |>
+  summarise(PartiesN = n(),.by = c(dayOfweek))
+
+# Create a character vector for the weekdays
+weekdays <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+
+# Convert it into an ordered factor
+DaysTrend$dayOfweek <- factor(DaysTrend$dayOfweek, 
+                          levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"), ordered = TRUE)
+
+
+BandsHeaders <- c("Band","Events","Total Contracts","Average contract",'Highest value')
+names(BandsStats) <- BandsHeaders
+
+BandsExp <- Bands |>
+  slice_max(n = 1,order_by = `Daily Rate`,by = `Music Style`) |>
+  select(`Music Style`,Band,`Daily Rate`,`Band City`) |>
+  arrange(`Music Style`)
+
+# Code block calculating the number of unique cities
+NumberOfCities <- as.character(length(unique(PartiesLocation$miastoklienta)))
+ContractsValue <- dollar(sum(PartiesLocation$wartosckontraktu))
+PartiesN <- nrow(Parties)
+
+Styles <- 
+  Bands |>
+  summarise(BandsPerCat = n(),.by = `Music Style`) |>
+  arrange(desc(BandsPerCat)) |>
+  mutate(Flag = case_when(dense_rank(desc(BandsPerCat)) == 1 ~ 'steelblue',.default = 'lightgray'))
+
+```
+
+## Summary
+
+We had investigated statistics for **`r NumberOfCities`** cities for almost two years of available data.
+
+Our agency organized **`r PartiesN`** events worth of **`r ContractsValue`**
+
+::: {.panel-tabset .nav-pills}
+## Events
+
+```{r,error=FALSE,message = FALSE,warning=FALSE,echo=FALSE}
+
+
+CitySummary <- PartiesTrend |> 
+  ggplot(aes(x = fct_reorder(miastoklienta, desc(PartiesN)), 
+             y = PartiesN, fill = Flag)) +  # Map fill to the Flag column
+  geom_col() + 
+  geom_text(aes(label = PartiesN, color = Flag),    
+            vjust = -0.5,                          
+            size = 4) +                          
+  scale_fill_identity() +  
+  scale_color_identity() +  
+  labs(x = "", y = "Number of Parties", title = "<b><span style='color:steelblue;'>Bullevue</span> is most popular city<b>")
+
+# Dodajemy stylizację wykresu
+CitySummary + 
+  My_theme()
+
+
+```
+
+```{r,error=FALSE,message = FALSE,warning=FALSE,echo=FALSE}
+PartiesDates |> 
+  complete(dzienrozpoczecia = seq.Date(from = min(PartiesDates$dzienrozpoczecia),
+                                       to = max(PartiesDates$dzienrozpoczecia), by = 'day')) |> 
+  mutate(Index = ifelse(!is.na(numerimprezy), 1, 0)) |>  # Używamy ifelse zamiast case_when
+  summarise(Parties = sum(Index), .by = dzienrozpoczecia) |> 
+  mutate(Cumulative = cumsum(Parties),
+         Points = ifelse(row_number() %% 10 == 0, Cumulative, NA_real_)) |>  # Co 10 dni dla punktów
+  ggplot(aes(x = dzienrozpoczecia, y = Cumulative)) +
+  geom_area(alpha = 0.1, color = 'steelblue') +
+  geom_point(aes(y = Points), na.rm = TRUE, color = 'darkblue') +  # Punkty co 10 dni
+  geom_text(aes(y = Points, label = round(Points, 0)), vjust = -1, na.rm = TRUE, size = 3) +  # Dodajemy etykiety co 10 dni
+  scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  scale_y_continuous(n.breaks = 5) +
+  labs(x = "", y = '', title = "<b>Agency organized <span style='color:steelblue;'>111</span>  events organized up to date<b>") +
+  My_theme()
+
+
+
+```
+
+## Bands
+
+```{r,error=FALSE,message = FALSE,warning=FALSE,echo=FALSE}
+BandsStats |>
+  select(-c(Events)) |>
+  arrange(desc(`Average contract`)) |>
+  gt() |>
+  tab_header(
+  title = "Most expensive bands") |> 
+  fmt_currency(columns = c("Total Contracts","Average contract",'Highest value')) |>
+  gt_color_rows(2:4, palette = "ggsci::blue_material") |>
+  tab_options(
+    heading.subtitle.font.size = 12,
+    heading.align = "left",
+    table.border.top.color = "white",
+    column_labels.border.bottom.color = "black",
+    column_labels.border.bottom.width= px(3),
+    table.align = "left"
+  ) |>
+  tab_source_note(md(" **Data**: Music agency"))
+```
+
+```{r,error=FALSE,message = FALSE,warning=FALSE,echo=FALSE}
+StylesChart <- Styles |>
+  ggplot(aes(x = BandsPerCat,y = reorder(`Music Style`,BandsPerCat),fill = Flag)) +
+  geom_bar(stat = "identity") +
+  ylab(label = "Music Styles") +
+  labs(title = "Teams most often declare proficiency in <span style='color:steelblue;'>classical works</span>")+
+  scale_fill_identity() +
+  My_theme()
+
+StylesChart
+```
+
+## About author
+
+Krzysztof Nowak is an experienced Automation Analyst with a focus on data quality improvement, analytical tool development, and automation. Based in Katowice, Poland, or open to remote work, Krzysztof has expertise in Alteryx, SQL, R, and Power BI.
+
+He currently works as a Senior Automation Analyst at TMF Group, where he builds automation solutions, mentors junior developers, and collaborates with internal and external clients. He has also led workshops on R programming for Enterprise DNA, promoting data analytics techniques within the community. Previous roles include Reporting Specialist at UBS and Investor Services Reporting Associate at State Street.
+
+Krzysztof holds a Bachelor's degree in Economics from Akademia WSB and certifications including Alteryx Core and SAFe® 5 Agilist. He is passionate about problem-solving, training beginners, and community development.
+
+For more details, his professional profiles are available on LinkedIn, GitHub, and Enterprise DNA.
+
+**Contact details**
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-profile-blue?style=flat&logo=linkedin)](https://linkedin.com/in/krzysztofnowakdata) [![GitHub](https://img.shields.io/badge/GitHub-profile-black?style=flat&logo=github)](https://github.com/KrzysztofNowakJaw) [![Enterprise DNA](https://img.shields.io/badge/Enterprise%20DNA-bio-ff69b4?style=flat)](https://enterprisedna.co/experts)
+
+## About dataset
+
+In this project, we use the dataset available in the book *SQL Queries for Mere Mortals Pearson uCertify Course and Labs Access Code Card, Fourth Edition: A Hands-On Guide to Data Manipulation in SQL* by John L. Viescas.
+:::
