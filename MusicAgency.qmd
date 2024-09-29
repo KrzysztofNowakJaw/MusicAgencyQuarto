@@ -34,6 +34,7 @@ theme_set(theme_minimal())
 My_theme <- function() {
   theme(
     plot.title = element_markdown(),
+    plot.subtitle = element_text(color = "darkgray",size = 12),
     plot.title.position = "plot",
     panel.background = element_blank(),
     panel.grid.major = element_blank()
@@ -102,7 +103,7 @@ Styles <-
 
 ## Summary
 
-We had investigated statistics for **`r NumberOfCities`** cities for almost two years of available data.
+We had investigated statistics for **`r NumberOfCities`** cities for twelve months of available data.
 
 Our agency organized **`r PartiesN`** events worth of **`r ContractsValue`**
 
@@ -125,7 +126,8 @@ PartiesDates |>
   geom_text(aes(y = Points, label = round(Points, 0)), vjust = -1, na.rm = TRUE, size = 3) +  # Dodajemy etykiety co 10 dni
   scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
   scale_y_continuous(n.breaks = 5) +
-  labs(x = "", y = '', title = "<b>The agency has organized a cumulative total of <span style='color:steelblue;'>111</span> events to date<b>") +
+  labs(x = "", y = '', title = "<b>The agency has organized a cumulative total of <span style='color:steelblue;'>111</span> events to date<b>"
+       ,subtitle = 'Consistent increase in the number of events') +
   My_theme()
 
 ```
@@ -141,7 +143,9 @@ CitySummary <- PartiesTrend |>
             size = 4) +                          
   scale_fill_identity() +  
   scale_color_identity() +  
-  labs(x = "", y = "Number of Parties", title = "<b><span style='color:steelblue;'>Bullevue</span> is most popular location<b>")
+  labs(x = "", y = "Number of Parties", title = "<b><span style='color:steelblue;'>Bullevue</span> is most popular location<b>",
+       subtitle = 'Number of events by city'
+       )
 
 # Dodajemy stylizację wykresu
 CitySummary + 
@@ -178,7 +182,8 @@ StylesChart <- Styles |>
   geom_bar(stat = "identity") +
   ylab(label = "Music Styles") +
   xlab(label ="") +
-  labs(title = "Teams most often declare proficiency in <span style='color:steelblue;'>classical works</span>")+
+  labs(title = "Teams most often declare proficiency in <span style='color:steelblue;'>classical works</span>",
+       subtitle = "The number of musical genres that our artists perform") +
   scale_fill_identity() +
   My_theme()
 
