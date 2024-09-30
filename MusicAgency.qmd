@@ -192,7 +192,9 @@ StylesChart
 
 ## About author
 
-Krzysztof Nowak is an experienced Automation Analyst with a focus on data quality improvement, analytical tool development, and automation. Based in Katowice, Poland, or open to remote work, Krzysztof has expertise in Alteryx, SQL, R, and Power BI.
+Krzysztof Nowak is an experienced Automation Analyst with a focus on data quality improvement, analytical tool development, and automation. Based in Katowice, Poland.
+
+Krzysztof has expertise in Alteryx, SQL, R, and Power BI.
 
 He currently works as a Senior Automation Analyst at TMF Group, where he builds automation solutions, mentors junior developers, and collaborates with internal and external clients. He has also led workshops on R programming for Enterprise DNA, promoting data analytics techniques within the community. Previous roles include Reporting Specialist at UBS and Investor Services Reporting Associate at State Street.
 
