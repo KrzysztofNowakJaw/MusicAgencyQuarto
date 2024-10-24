@@ -33,7 +33,17 @@ idklienta
 
 FROM agencjaartystycznazmiana.klienci"
 
-Artists <- "SELECT 
+Artists <- "
+WITH Members AS (
+SELECT 
+	idwykonawcy
+	,COUNT(idczlonka) AS Members
+	FROM agencjaartystycznazmiana.czlonkowie_zespolu
+	GROUP BY 1
+)
+
+
+SELECT 
 
 W.nazwascenicznawykonawcy AS Band
 ,miastowykonawcy AS BandCity
@@ -58,10 +68,11 @@ W.nazwascenicznawykonawcy AS Band
         WHEN 'Jazz' THEN 'Jazz'
         ELSE 'Unknown'
     END AS MusicStyle
-
+,Members
 FROM agencjaartystycznazmiana.wykonawcy AS W
 LEFT JOIN agencjaartystycznazmiana.style_wykonawcow AS SW On W.idwykonawcy = SW.idwykonawcy
-LEFT JOIN agencjaartystycznazmiana.style_muzyczne AS SM ON SM.idstylu = SW.idstylu"
+LEFT JOIN agencjaartystycznazmiana.style_muzyczne AS SM ON SM.idstylu = SW.idstylu
+LEFT JOIN Members AS CZ ON CZ.idwykonawcy = W.idwykonawcy"
 
 ArtistsStats <- "
 SELECT 

@@ -170,8 +170,8 @@ BandsStats |>
     heading.align = "left",
     table.border.top.color = "white",
     column_labels.border.bottom.color = "black",
-    column_labels.border.bottom.width= px(3),
-    table.align = "left"
+    column_labels.border.bottom.width= px(3)
+    #,table.align = "left"
   ) |>
   tab_source_note(md(" **Data**: Music agency"))
 ```
